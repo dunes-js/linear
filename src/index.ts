@@ -2,9 +2,7 @@
 
 export * from "./Frustum.js"
 export * from "./Quaternion.js"
-export * from "./AABB.js"
 export * from "./Plane.js"
-export * from "./Line.js"
 export * from "./Camera.js"
 
 export * from "./matrix/Mat2.js"
