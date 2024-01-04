@@ -110,19 +110,17 @@ export class Quaternion
   // Convert the quaternion to a 4x4 rotation matrix
   toRotationMatrix(): Mat4 
   {
-    const { #w: w, #x: x, #y: y, #z: z } = this;
+    const xx = this.#x * this.#x;
+    const xy = this.#x * this.#y;
+    const xz = this.#x * this.#z;
+    const xw = this.#x * this.#w;
 
-    const xx = x * x;
-    const xy = x * y;
-    const xz = x * z;
-    const xw = x * w;
+    const yy = this.#y * this.#y;
+    const yz = this.#y * this.#z;
+    const yw = this.#y * this.#w;
 
-    const yy = y * y;
-    const yz = y * z;
-    const yw = y * w;
-
-    const zz = z * z;
-    const zw = z * w;
+    const zz = this.#z * this.#z;
+    const zw = this.#z * this.#w;
 
     return new Mat4(
       1 - 2 * (yy + zz), 2 * (xy - zw), 2 * (xz + yw), 0,
