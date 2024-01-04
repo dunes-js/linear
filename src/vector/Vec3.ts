@@ -1,129 +1,141 @@
-import { Vec } from "./Vec.js";
+import { Vec } from './Vec.js';
 
-export class Vec3 extends Vec {
-  private _x: number;
-  private _y: number;
-  private _z: number;
-
-  constructor(x = 0, y = 0, z = 0) {
+export class Vec3 extends Vec<3> 
+{
+  constructor(x = 0, y = 0, z = 0) 
+  {
     super(3);
-    this._x = x;
-    this._y = y;
-    this._z = z;
+    this.set(x, y, z);
   }
 
-  // Getters and Setters for x, y, and z
-  get x(): number {
-    return this._x;
+  set(x: number, y: number, z: number): this 
+  {
+    this.x = x;
+    this.y = y;
+    this.z = z;
+    return this;
   }
 
-  set x(value: number) {
-    this._x = value;
+  clone(): this 
+  {
+    return new Vec3(this.x, this.y, this.z) as this;
   }
 
-  get y(): number {
-    return this._y;
-  }
+  cross(other: this): this 
+  {
+    const x = this.x;
+    const y = this.y;
+    const z = this.z;
+    const ox = other.x;
+    const oy = other.y;
+    const oz = other.z;
 
-  set y(value: number) {
-    this._y = value;
-  }
-
-  get z(): number {
-    return this._z;
-  }
-
-  set z(value: number) {
-    this._z = value;
-  }
-
-  // Concrete implementation for swizzling in 3D
-  swizzle(indices: number[]): this {
-    if (indices.length !== 3) {
-      throw new Error("Swizzle indices must be of length 3 for Vec3.");
-    }
-
-    const [index1, index2, index3] = indices;
-    this._x = this.values[index1!]!;
-    this._y = this.values[index2!]!;
-    this._z = this.values[index3!]!;
+    this.x = y * oz - z * oy;
+    this.y = z * ox - x * oz;
+    this.z = x * oy - y * ox;
 
     return this;
   }
 
-  // Concrete implementation for converting to homogeneous coordinates
-  toHomogeneous(): this {
-    if (this.values.length === 3) {
-      this.values.push(1);
-    }
-    return this;
-  }
-
-  // Concrete implementation for converting from homogeneous coordinates
-  fromHomogeneous(): this {
-    if (this.values.length === 4) {
-      this._x /= this.values[3]!;
-      this._y /= this.values[3]!;
-      this._z /= this.values[3]!;
-      this.values.pop();
-    }
-    return this;
-  }
-
-  // Concrete implementation for cloning Vec3
-  clone(): this {
-    return new Vec3(this._x, this._y, this._z) as this;
-  }
-
-  // Concrete implementation for creating a Vec3 from a scalar
-  fromScalar(scalar: number): this {
-    this._x = scalar;
-    this._y = scalar;
-    this._z = scalar;
-
-    return this;
-  }
-
-  // Concrete implementation for 3D cross product
-  crossProduct(other: Vec3): this {
-    const result = this.clone();
-    this._x = this._y * other.z - this._z * other.y;
-    this._y = this._z * other.x - this._x * other.z;
-    this._z = this._x * other.y - this._y * other.x;
-
-    return result;
-  }
-
-  // Concrete implementation for the angle between two Vec3
-  angleTo(other: Vec3): number {
-    const dot = this.dotProduct(other as this);
+  angleTo(other: this): number 
+  {
+    const dotProduct = this.dot(other);
     const magnitudeProduct = this.length() * other.length();
-
-    if (magnitudeProduct === 0) {
-      throw new Error("Cannot compute angle with zero-length vector.");
-    }
-
-    return Math.acos(Math.min(Math.max(dot / magnitudeProduct, -1), 1));
+    return Math.acos(dotProduct / magnitudeProduct);
   }
 
-  // Concrete implementation for projecting Vec3 onto another Vec3
-  projectOnto(other: Vec3): this {
-    const scalar = this.dotProduct(other as this) / other.lengthSquared();
-    this._x = scalar * other.x;
-    this._y = scalar * other.y;
-    this._z = scalar * other.z;
-
+  projectOnto(other: this): this 
+  {
+    const scalar = this.dot(other) / other.lengthSquared();
+    this.x = scalar * other.x;
+    this.y = scalar * other.y;
+    this.z = scalar * other.z;
     return this;
   }
 
-  // Concrete implementation for reflecting Vec3 across a normal Vec3
-  reflectAcross(normal: Vec3): this {
-    const scalar = -2 * this.dotProduct(normal as this) / normal.lengthSquared();
-    this._x += scalar * normal.x;
-    this._y += scalar * normal.y;
-    this._z += scalar * normal.z;
-
+  reflectAcross(normal: this): this 
+  {
+    const dotProduct = this.dot(normal);
+    this.x = this.x - 2 * dotProduct * normal.x;
+    this.y = this.y - 2 * dotProduct * normal.y;
+    this.z = this.z - 2 * dotProduct * normal.z;
     return this;
   }
 
+  swizzle(indices: number[]): this 
+  {
+    const swizzledValues = indices.map(index => this.values[index] || 0);
+    this.x = swizzledValues[0]!;
+    this.y = swizzledValues[1]!;
+    this.z = swizzledValues[2]!;
+    return this;
+  }
+
+  translate(dx: number, dy: number, dz: number): this {
+    this.x += dx;
+    this.y += dy;
+    this.z += dz;
+    return this;
+  }
+
+  rotateX(angle: number): this {
+    const newY = this.y * Math.cos(angle) - this.z * Math.sin(angle);
+    const newZ = this.y * Math.sin(angle) + this.z * Math.cos(angle);
+    this.y = newY;
+    this.z = newZ;
+    return this;
+  }
+
+  rotateY(angle: number): this {
+    const newX = this.z * Math.sin(angle) + this.x * Math.cos(angle);
+    const newZ = this.z * Math.cos(angle) - this.x * Math.sin(angle);
+    this.x = newX;
+    this.z = newZ;
+    return this;
+  }
+
+  rotateZ(angle: number): this {
+    const newX = this.x * Math.cos(angle) - this.y * Math.sin(angle);
+    const newY = this.x * Math.sin(angle) + this.y * Math.cos(angle);
+    this.x = newX;
+    this.y = newY;
+    return this;
+  }
+
+  scale(scalar: number): this {
+    this.x *= scalar;
+    this.y *= scalar;
+    this.z *= scalar;
+    return this;
+  }
+
+  get x(): number 
+  {
+    return this.values[0]!;
+  }
+
+  set x(value: number) 
+  {
+    this.values[0] = value;
+  }
+
+  get y(): number 
+  {
+    return this.values[1]!;
+  }
+
+  set y(value: number) 
+  {
+    this.values[1] = value;
+  }
+
+  get z(): number 
+  {
+    return this.values[2]!;
+  }
+
+  set z(value: number) 
+  {
+    this.values[2] = value;
+  }
 }

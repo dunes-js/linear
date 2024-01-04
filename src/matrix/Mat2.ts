@@ -1,77 +1,170 @@
-import { Mat } from "./Mat.js";
-import { Vec2 } from "../vector/Vec2.js";
+import { Mat } from './Mat.js';
+import { Vec2 } from '../vector/Vec2.js';
 
-export class Mat2 extends Mat<Vec2[]> {
-  constructor() {
+export class Mat2 extends Mat<2, [Vec2, Vec2]> 
+{
+  constructor(
+    m11: number = 0, m12: number = 0,
+    m21: number = 0, m22: number = 0
+  ) 
+  {
     super(2);
+    this.set(m11, m12, m21, m22);
   }
 
-  // Concrete implementation for filling the matrix with Vec2 instances
-  fill(): Vec2 {
+  set(
+    m11: number, m12: number,
+    m21: number, m22: number
+  ) 
+  {
+    this.m1 = new Vec2(m11, m12);
+    this.m2 = new Vec2(m21, m22);
+  }
+
+  fill(): Vec2 
+  {
     return new Vec2();
   }
 
-  // Concrete implementation for cloning Mat2
-  clone(): this {
-    const mat2 = new Mat2();
-    for (let i = 0; i < this.values.length; i++) {
-      mat2.values[i] = this.values[i]!.clone();
-    }
-    return mat2 as this;
+  clone(): this 
+  {
+    return new Mat2(
+      this.m11, this.m12,
+      this.m21, this.m22
+    ) as this;
   }
 
-  // Concrete implementation for transposing Mat2
-  transpose(): this {
-    const tempValues: number[][] = [];
-    for (let i = 0; i < this.values.length; i++) {
-      tempValues[i] = [];
-      for (let j = 0; j < this.values[i]!.length(); j++) {
-        tempValues[i]![j] = this.values[j]!.values[i]!;
-      }
-    }
-
-    for (let i = 0; i < this.values.length; i++) {
-      for (let j = 0; j < this.values[i]!.length(); j++) {
-        this.values[i]!.values[j] = tempValues[i]![j]!;
-      }
-    }
-
+  transpose(): this 
+  {
+    [this.m12, this.m21] = [this.m21, this.m12];
     return this;
   }
 
-  // Concrete implementation for creating an identity Mat2
-  identity(): this {
-    for (let i = 0; i < this.values.length; i++) {
-      this.values[i]!.values[i] = 1;
-    }
+  identity(): this 
+  {
+    this.m1.set(1, 0);
+    this.m2.set(0, 1);
     return this;
   }
 
-  // Concrete implementation for calculating the determinant of Mat2
-  determinant(): number {
-    return this.values[0]!.x * this.values[1]!.y - this.values[0]!.y * this.values[1]!.x;
+  determinant(): number 
+  {
+    return this.m11 * this.m22 - this.m12 * this.m21;
   }
 
-  // Concrete implementation for calculating the inverse of Mat2
-  inverse(): this {
+  inverse(): this 
+  {
     const det = this.determinant();
-    if (det === 0) {
-      throw new Error("Matrix is not invertible.");
-    }
 
-    const invDet = 1 / det;
+    if (det !== 0) 
+    {
+      const invDet = 1 / det;
+      const [m11, m12, m21, m22] = this.data();
 
-    const tempValues: number[][] = [
-      [this.values[1]!.y * invDet, -this.values[0]!.y * invDet],
-      [-this.values[1]!.x * invDet, this.values[0]!.x * invDet],
-    ];
-
-    for (let i = 0; i < this.values.length; i++) {
-      for (let j = 0; j < this.values[i]!.length(); j++) {
-        this.values[i]!.values[j] = tempValues[i]![j]!;
-      }
+      this.values[0]!.set(m22! * invDet, -m12! * invDet);
+      this.values[1]!.set(-m21! * invDet, m11! * invDet);
     }
 
     return this;
+  }
+
+  translate(x: number, y: number): this;
+  translate(translation: Vec2): this;
+  translate(arg1: number | Vec2, arg2?: number): this 
+  {
+    const translationMatrix = new Mat2(1, 0, 0, 1);
+    if (arg1 instanceof Vec2) 
+    {
+      translationMatrix.put(0, arg1);
+    } 
+    else 
+    {
+      translationMatrix.put(0, new Vec2(arg1, arg2!));
+    }
+    return this.multiply(translationMatrix as this);
+  }
+
+  rotate(angleInRadians: number): this 
+  {
+    const rotationMatrix = new Mat2(Math.cos(angleInRadians), -Math.sin(angleInRadians), Math.sin(angleInRadians), Math.cos(angleInRadians));
+    return this.multiply(rotationMatrix as this);
+  }
+
+  scale(sx: number, sy: number): this;
+  scale(scaling: Vec2): this;
+  scale(arg1: number | Vec2, arg2?: number): this 
+  {
+    const scalingMatrix = new Mat2();
+    if (arg1 instanceof Vec2) 
+    {
+      scalingMatrix.put(0, arg1);
+    } 
+    else 
+    {
+      scalingMatrix.put(0, new Vec2(arg1, arg2!));
+    }
+    return this.multiply(scalingMatrix as this);
+  }
+
+  // Getters and Setters for rows
+  get m1(): Vec2 
+  {
+    return this.values[0];
+  }
+
+  set m1(value: Vec2) 
+  {
+    this.values[0] = value;
+  }
+
+  get m2(): Vec2 
+  {
+    return this.values[1];
+  }
+
+  set m2(value: Vec2) 
+  {
+    this.values[1] = value;
+  }
+
+  // Getters and Setters for individual elements
+  get m11(): number 
+  {
+    return this.values[0]!.x;
+  }
+
+  set m11(value: number) 
+  {
+    this.values[0]!.x = value;
+  }
+
+  get m12(): number 
+  {
+    return this.values[0]!.y;
+  }
+
+  set m12(value: number) 
+  {
+    this.values[0]!.y = value;
+  }
+
+  get m21(): number 
+  {
+    return this.values[1]!.x;
+  }
+
+  set m21(value: number) 
+  {
+    this.values[1]!.x = value;
+  }
+
+  get m22(): number 
+  {
+    return this.values[1]!.y;
+  }
+
+  set m22(value: number) 
+  {
+    this.values[1]!.y = value;
   }
 }

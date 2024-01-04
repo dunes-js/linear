@@ -1,11 +1,15 @@
-import { Vec2 } from "../src/vector/Vec2.js";
+import * as lin from "../src/index.js";
+
+const vector = lin.vec3(0, 1, 0).cross(lin.vec3(0, 1, 0));
+
+console.log(vector.constructor.name);
 
 
+const projection = lin.mat4().perspective(70, 1, 0.1, 100);
 
+const eye = lin.vec3(0, 0, -1);
+const target = lin.vec3();
+const up = lin.vec3(0, 1, 0);
 
+const view = lin.mat4().lookAt(eye, target, up);
 
-const vec2 = new Vec2(0, 1);
-
-const r = vec2.crossProduct(new Vec2(0, 1))
-
-console.log(r.constructor.name);

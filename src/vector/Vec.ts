@@ -1,138 +1,171 @@
 
-export abstract class Vec implements Iterable<number> {
-  values: number[];
+export abstract class Vec<N extends number> implements Iterable<number> 
+{
+  protected values: number[];
 
-  // Symbol.iterator implementation
-  *[Symbol.iterator](): Iterator<number> {
+  constructor(readonly size: N) 
+  {
+    this.values = Array.from({ length: size }, () => 0);
+  }
+  
+  abstract clone(): this;
+
+  // Other operations
+  abstract cross(other: this): this;
+  abstract angleTo(other: this): number;
+  abstract projectOnto(other: this): this;
+  abstract reflectAcross(normal: this): this;
+
+  // Swizzling
+  abstract swizzle(indices: number[]): this;
+
+
+  *[Symbol.iterator](): Iterator<number> 
+  {
     for (const value of this.values) {
       yield value;
     }
   }
 
-  constructor(length: number) {
-    this.values = Array.from({ length }, () => 0);
+  data(): number[]
+  {
+    return [...this.values];
   }
 
-  // Swizzling
-  abstract swizzle(indices: number[]): this;
+  at(n: number): number | null
+  {
+    return this.values[n] || null;
+  }
 
-  // Conversion methods
-  abstract toHomogeneous(): this;
-  abstract fromHomogeneous(): this;
-  
-  abstract clone(): this;
+  put(i: number, n: number): this
+  {
+    this.values[i] = n;
+    return this;
+  }
 
-  // Helper method to create a this with a scalar value
-  abstract fromScalar(scalar: number): this;
-
-  // Other operations
-  abstract crossProduct(other: this): this;
-  abstract angleTo(other: this): number;
-  abstract projectOnto(other: this): this;
-  abstract reflectAcross(normal: this): this;
-
-  // Delegated array methods
-  add(other: this): this {
-    for (let i = 0; i < this.length(); i++) {
+  add(other: this): this 
+  {
+    for (let i = 0; i < this.size; i++) {
       this.values[i] += other.values[i]!;
     }
     return this;
   }
 
-  subtract(other: this): this {
-    for (let i = 0; i < this.length(); i++) {
+  subtract(other: this): this 
+  {
+    for (let i = 0; i < this.size; i++) {
       this.values[i] -= other.values[i]!;
     }
     return this;
   }
 
-  multiplyBy(vector: this): this {
-    for (let i = 0; i < this.length(); i++) {
+  multiplyBy(vector: this): this 
+  {
+    for (let i = 0; i < this.size; i++) 
+    {
       this.values[i] *= vector.values[i]!;
     }
     return this;
   }
 
-  divideBy(vector: this): this {
-    for (let i = 0; i < this.length(); i++) {
+  divideBy(vector: this): this 
+  {
+    for (let i = 0; i < this.size; i++) 
+    {
       this.values[i] /= vector.values[i]!;
     }
     return this;
   }
 
-  addScalar(scalar: number): this {
-    for (let i = 0; i < this.length(); i++) {
+  addScalar(scalar: number): this 
+  {
+    for (let i = 0; i < this.size; i++) 
+    {
       this.values[i] += scalar;
     }
     return this;
   }
 
-  subtractScalar(scalar: number): this {
-    for (let i = 0; i < this.length(); i++) {
+  subtractScalar(scalar: number): this 
+  {
+    for (let i = 0; i < this.size; i++) 
+    {
       this.values[i] -= scalar;
     }
     return this;
   }
 
-  multiplyScalar(scalar: number): this {
-    for (let i = 0; i < this.length(); i++) {
+  multiplyScalar(scalar: number): this 
+  {
+    for (let i = 0; i < this.size; i++) 
+    {
       this.values[i] *= scalar;
     }
     return this;
   }
 
-  divideScalar(scalar: number): this {
-    for (let i = 0; i < this.length(); i++) {
+  divideScalar(scalar: number): this 
+  {
+    for (let i = 0; i < this.size; i++) 
+    {
       this.values[i] /= scalar;
     }
     return this;
   }
 
-  dotProduct(other: this): number {
+  dot(other: this): number 
+  {
     let result = 0;
-    for (let i = 0; i < this.length(); i++) {
+    for (let i = 0; i < this.size; i++) 
+    {
       result += this.values[i]! * other.values[i]!;
     }
     return result;
   }
 
-  lengthSquared(): number {
+  lengthSquared(): number 
+  {
     let result = 0;
-    for (const value of this) {
+    for (const value of this) 
+    {
       result += value * value;
     }
     return result;
   }
 
-  length(): number {
+  length(): number 
+  {
     return Math.sqrt(this.lengthSquared());
   }
 
   normalize(): this {
     const len = this.length();
     if (len !== 0) {
-      for (let i = 0; i < this.length(); i++) {
+      for (let i = 0; i < this.size; i++) {
         this.values[i] /= len;
       }
     }
     return this;
   }
 
-  // Interpolation methods
-  lerp(target: this, alpha: number): this {
-    for (let i = 0; i < this.length(); i++) {
+  lerp(target: this, alpha: number): this 
+  {
+    for (let i = 0; i < this.size; i++) 
+    {
       this.values[i] += (target.values[i]! - this.values[i]!) * alpha;
     }
     return this;
   } 
 
-  // Spherical linear interpolation with default implementation
-  slerp(target: this, alpha: number): this {
-    const dot = this.dotProduct(target);
+  // Spherical linear interpolation
+  slerp(target: this, alpha: number): this 
+  {
+    const dot = this.dot(target);
     const theta = Math.acos(dot);
     const sinTheta = Math.sin(theta);
 
-    if (sinTheta === 0) {
+    if (sinTheta === 0) 
+    {
       // If sin(theta) is zero, the vectors are collinear.
       // Use linear interpolation instead of slerp to avoid division by zero.
       return this.lerp(target, alpha);
@@ -144,7 +177,8 @@ export abstract class Vec implements Iterable<number> {
     const result = this.clone();
 
     // Interpolating using slerp formula
-    for (let i = 0; i < this.length(); i++) {
+    for (let i = 0; i < this.size; i++) 
+    {
       result.values[i] = factorA * this.values[i]! + factorB * target.values[i]!;
     }
 
@@ -152,22 +186,27 @@ export abstract class Vec implements Iterable<number> {
   }
 
   // Element-wise operations
-  abs(): this {
-    for (let i = 0; i < this.length(); i++) {
+  abs(): this 
+  {
+    for (let i = 0; i < this.size; i++) 
+    {
       this.values[i] = Math.abs(this.values[i]!);
     }
     return this;
   }
 
   negate(): this {
-    for (let i = 0; i < this.length(); i++) {
+    for (let i = 0; i < this.size; i++) 
+    {
       this.values[i] = -this.values[i]!;
     }
     return this;
   }
 
-  round(): this {
-    for (let i = 0; i < this.length(); i++) {
+  round(): this
+  {
+    for (let i = 0; i < this.size; i++) 
+    {
       this.values[i] = Math.round(this.values[i]!);
     }
     return this;

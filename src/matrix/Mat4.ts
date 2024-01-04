@@ -1,332 +1,493 @@
-import { Mat } from "./Mat.js";
-import { Vec4 } from "../vector/Vec4.js";
-import { Vec3 } from "../vector/Vec3.js";
-import { Quaternion } from "../Quaternion.js";
+import { Mat } from './Mat.js';
+import { Vec3 } from '../vector/Vec3.js';
+import { Vec4 } from '../vector/Vec4.js';
+import { Quaternion } from '../Quaternion.js';
 
-export class Mat4 extends Mat<Vec4[]> {
-  constructor() {
+export class Mat4 extends Mat<4, [Vec4, Vec4, Vec4, Vec4]> 
+{
+  constructor(
+    m11: number = 0, m12: number = 0, m13: number = 0, m14: number = 0,
+    m21: number = 0, m22: number = 0, m23: number = 0, m24: number = 0,
+    m31: number = 0, m32: number = 0, m33: number = 0, m34: number = 0,
+    m41: number = 0, m42: number = 0, m43: number = 0, m44: number = 0
+  ) 
+  {
     super(4);
+    this.set(m11, m12, m13, m14, m21, m22, m23, m24,
+             m31, m32, m33, m34, m41, m42, m43, m44);
   }
 
-  // Concrete implementation for filling the matrix with Vec4 instances
-  fill(): Vec4 {
+  set(
+    m11: number, m12: number, m13: number, m14: number,
+    m21: number, m22: number, m23: number, m24: number,
+    m31: number, m32: number, m33: number, m34: number,
+    m41: number, m42: number, m43: number, m44: number
+  ) 
+  {
+    this.m1 = new Vec4(m11, m12, m13, m14);
+    this.m2 = new Vec4(m21, m22, m23, m24);
+    this.m3 = new Vec4(m31, m32, m33, m34);
+    this.m4 = new Vec4(m41, m42, m43, m44);
+  }
+
+  fill(): Vec4 
+  {
     return new Vec4();
   }
 
-  // Concrete implementation for cloning Mat4
-  clone(): this {
-    const mat4 = new Mat4();
-    for (let i = 0; i < this.values.length; i++) {
-      mat4.values[i] = this.values[i]!.clone();
-    }
-    return mat4 as this;
-  }
-  
-  // Getter for accessing the elements of the matrix as a flat array
-  get elements(): number[] {
-    const result: number[] = [];
-
-    for (let i = 0; i < this.values.length; i++) {
-      for (let j = 0; j < this.values[i]!.length(); j++) {
-        result.push(this.values[i]!.values[j]!);
-      }
-    }
-
-    return result;
+  clone(): this 
+  {
+    return new Mat4(
+      this.m11, this.m12, this.m13, this.m14,
+      this.m21, this.m22, this.m23, this.m24,
+      this.m31, this.m32, this.m33, this.m34,
+      this.m41, this.m42, this.m43, this.m44
+    ) as this;
   }
 
-  // Concrete implementation for transposing Mat4
-  transpose(): this {
-    const tempValues: number[][] = [];
+  transpose(): this 
+  {
+    let temp = this.m12;
+    this.m12 = this.m21;
+    this.m21 = temp;
 
-    for (let i = 0; i < this.values.length; i++) {
-      tempValues[i] = [];
-      for (let j = 0; j < this.values[i]!.length(); j++) {
-        tempValues[i]![j] = this.values[j]!.values[i]!;
-      }
-    }
+    temp = this.m13;
+    this.m13 = this.m31;
+    this.m31 = temp;
 
-    for (let i = 0; i < this.values.length; i++) {
-      for (let j = 0; j < this.values[i]!.length(); j++) {
-        this.values[i]!.values[j] = tempValues[i]![j]!;
-      }
-    }
+    temp = this.m14;
+    this.m14 = this.m41;
+    this.m41 = temp;
+
+    temp = this.m23;
+    this.m23 = this.m32;
+    this.m32 = temp;
+
+    temp = this.m24;
+    this.m24 = this.m42;
+    this.m42 = temp;
+
+    temp = this.m34;
+    this.m34 = this.m43;
+    this.m43 = temp;
 
     return this;
   }
 
-  // Concrete implementation for creating an identity Mat4
-  identity(): this {
-    for (let i = 0; i < this.values.length; i++) {
-      for (let j = 0; j < this.values[i]!.length(); j++) {
-        this.values[i]!.values[j] = i === j ? 1 : 0;
-      }
-    }
-
+  identity(): this 
+  {
+    this.m1.set(1, 0, 0, 0);
+    this.m2.set(0, 1, 0, 0);
+    this.m3.set(0, 0, 1, 0);
+    this.m4.set(0, 0, 0, 1);
     return this;
   }
 
-  // Concrete implementation for calculating the determinant of Mat4
-  determinant(): number {
-    const a11 = this.values[0]!.x;
-    const a12 = this.values[0]!.y;
-    const a13 = this.values[0]!.z;
-    const a14 = this.values[0]!.w;
-    const a21 = this.values[1]!.x;
-    const a22 = this.values[1]!.y;
-    const a23 = this.values[1]!.z;
-    const a24 = this.values[1]!.w;
-    const a31 = this.values[2]!.x;
-    const a32 = this.values[2]!.y;
-    const a33 = this.values[2]!.z;
-    const a34 = this.values[2]!.w;
-    const a41 = this.values[3]!.x;
-    const a42 = this.values[3]!.y;
-    const a43 = this.values[3]!.z;
-    const a44 = this.values[3]!.w;
+  determinant(): number 
+  {
+    const [m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44] = this.data() as [
+        number, number, number, number,
+        number, number, number, number,
+        number, number, number, number,
+        number, number, number, number,
+      ];
 
     return (
-      a11 * (a22 * a33 * a44 + a23 * a34 * a42 + a24 * a32 * a43 - a24 * a33 * a42 - a23 * a32 * a44 - a22 * a34 * a43) -
-      a12 * (a21 * a33 * a44 + a23 * a34 * a41 + a24 * a31 * a43 - a24 * a33 * a41 - a23 * a31 * a44 - a21 * a34 * a43) +
-      a13 * (a21 * a32 * a44 + a22 * a34 * a41 + a24 * a31 * a42 - a24 * a32 * a41 - a22 * a31 * a44 - a21 * a34 * a42) -
-      a14 * (a21 * a32 * a43 + a22 * a33 * a41 + a23 * a31 * a42 - a23 * a32 * a41 - a22 * a31 * a43 - a21 * a33 * a42)
+      m11 * m22 * m33 * m44 -
+      m11 * m22 * m34 * m43 -
+      m11 * m23 * m32 * m44 +
+      m11 * m23 * m34 * m42 +
+      m11 * m24 * m32 * m43 -
+      m11 * m24 * m33 * m42 -
+      m12 * m21 * m33 * m44 +
+      m12 * m21 * m34 * m43 +
+      m12 * m23 * m31 * m44 -
+      m12 * m23 * m34 * m41 -
+      m12 * m24 * m31 * m43 +
+      m12 * m24 * m33 * m41 +
+      m13 * m21 * m32 * m44 -
+      m13 * m21 * m34 * m42 -
+      m13 * m22 * m31 * m44 +
+      m13 * m22 * m34 * m41 +
+      m13 * m24 * m31 * m42 -
+      m13 * m24 * m32 * m41 -
+      m14 * m21 * m32 * m43 +
+      m14 * m21 * m33 * m42 +
+      m14 * m22 * m31 * m43 -
+      m14 * m22 * m33 * m41 -
+      m14 * m23 * m31 * m42 +
+      m14 * m23 * m32 * m41
     );
   }
 
-   // Concrete implementation for calculating the inverse of Mat4 using Gauss-Jordan elimination
-  inverse(): this {
-    const n = this.values.length;
-    const augmentedMatrix = new Mat4();
+  inverse(): this 
+  {
+    const det = this.determinant();
 
-    // Augment the matrix with the identity matrix
-    for (let i = 0; i < n; i++) {
-      augmentedMatrix.values[i] = this.values[i]!.clone();
-      augmentedMatrix.values[i + n] = new Vec4().fromScalar(i === 0 ? 1 : 0);
-    }
+    if (det !== 0) {
+      const invDet = 1 / det;
 
-    // Apply Gauss-Jordan elimination
-    for (let i = 0; i < n; i++) {
-      // Find pivot row
-      let pivotRow = i;
-      for (let j = i + 1; j < n; j++) {
-        if (Math.abs(augmentedMatrix.values[j]!.values[i]!) > Math.abs(augmentedMatrix.values[pivotRow]!.values[i]!)) {
-          pivotRow = j;
-        }
-      }
-
-      // Swap rows
-      [augmentedMatrix.values[i]!, augmentedMatrix.values[pivotRow]!] = [
-        augmentedMatrix.values[pivotRow]!,
-        augmentedMatrix.values[i]!,
+      const [m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44] = this.data() as [
+        number, number, number, number,
+        number, number, number, number,
+        number, number, number, number,
+        number, number, number, number,
       ];
 
-      // Scale pivot row
-      const pivotValue = augmentedMatrix.values[i]!.values[i]!;
-      augmentedMatrix.values[i]!.divideScalar(pivotValue);
+      this.values[0]!.set(
+        (m22 * m33 * m44 - m22 * m34 * m43 - m23 * m32 * m44 + m23 * m34 * m42 + m24 * m32 * m43 - m24 * m33 * m42) * invDet,
+        (-m12 * m33 * m44 + m12 * m34 * m43 + m13 * m32 * m44 - m13 * m34 * m42 - m14 * m32 * m43 + m14 * m33 * m42) * invDet,
+        (m12 * m23 * m44 - m12 * m24 * m43 - m13 * m22 * m44 + m13 * m24 * m42 + m14 * m22 * m43 - m14 * m23 * m42) * invDet,
+        (-m12 * m23 * m34 + m12 * m24 * m33 + m13 * m22 * m34 - m13 * m24 * m32 - m14 * m22 * m33 + m14 * m23 * m32) * invDet
+      );
 
-      // Eliminate other rows
-      for (let j = 0; j < n; j++) {
-        if (j !== i) {
-          const factor = augmentedMatrix.values[j]!.values[i]!;
-          augmentedMatrix.values[j]!.subtract(augmentedMatrix.values[i]!.clone().multiplyScalar(factor));
-        }
-      }
-    }
+      this.values[1]!.set(
+        (-m21 * m33 * m44 + m21 * m34 * m43 + m23 * m31 * m44 - m23 * m34 * m41 - m24 * m31 * m43 + m24 * m33 * m41) * invDet,
+        (m11 * m33 * m44 - m11 * m34 * m43 - m13 * m31 * m44 + m13 * m34 * m41 + m14 * m31 * m43 - m14 * m33 * m41) * invDet,
+        (-m11 * m23 * m44 + m11 * m24 * m43 + m13 * m21 * m44 - m13 * m24 * m41 - m14 * m21 * m43 + m14 * m23 * m41) * invDet,
+        (m11 * m23 * m34 - m11 * m24 * m33 - m13 * m21 * m34 + m13 * m24 * m31 + m14 * m21 * m33 - m14 * m23 * m31) * invDet
+      );
 
-    // Extract the inverse matrix from the augmented matrix
-    for (let i = 0; i < n; i++) {
-      this.values[i] = augmentedMatrix.values[i + n]!.clone();
+      this.values[2]!.set(
+        (m21 * m32 * m44 - m21 * m34 * m42 - m22 * m31 * m44 + m22 * m34 * m41 + m24 * m31 * m42 - m24 * m32 * m41) * invDet,
+        (-m11 * m32 * m44 + m11 * m34 * m42 + m12 * m31 * m44 - m12 * m34 * m41 - m14 * m31 * m42 + m14 * m32 * m41) * invDet,
+        (m11 * m22 * m44 - m11 * m24 * m42 - m12 * m21 * m44 + m12 * m24 * m41 + m14 * m21 * m42 - m14 * m22 * m41) * invDet,
+        (-m11 * m22 * m34 + m11 * m24 * m32 + m12 * m21 * m34 - m12 * m24 * m31 - m14 * m21 * m32 + m14 * m22 * m31) * invDet
+      );
+
+      this.values[3]!.set(
+        (-m21 * m32 * m43 + m21 * m33 * m42 + m22 * m31 * m43 - m22 * m33 * m41 - m23 * m31 * m42 + m23 * m32 * m41) * invDet,
+        (m11 * m32 * m43 - m11 * m33 * m42 - m12 * m31 * m43 + m12 * m33 * m41 + m13 * m31 * m42 - m13 * m32 * m41) * invDet,
+        (-m11 * m22 * m43 + m11 * m23 * m42 + m12 * m21 * m43 - m12 * m23 * m41 - m13 * m21 * m42 + m13 * m22 * m41) * invDet,
+        (m11 * m22 * m33 - m11 * m23 * m32 - m12 * m21 * m33 + m12 * m23 * m31 + m13 * m21 * m32 - m13 * m22 * m31) * invDet
+      );
     }
 
     return this;
   }
 
-   // Concrete implementation for translating the Mat4 by a vector
-  translate(translation: Vec3): this;
-  // Overload for translating the Mat4 by individual components
   translate(x: number, y: number, z: number): this;
-  translate(xOrTranslation: number | Vec3, y?: number, z?: number): this {
-    if (xOrTranslation instanceof Vec3) {
-      const translationMatrix = new Mat4().identity();
-
-      translationMatrix.values[3]!.x = xOrTranslation.x;
-      translationMatrix.values[3]!.y = xOrTranslation.y;
-      translationMatrix.values[3]!.z = xOrTranslation.z;
-
-      // Multiply the current matrix by the translation matrix
-      this.multiply(translationMatrix);
-    } else {
-      const translationMatrix = new Mat4().identity();
-
-      translationMatrix.values[3]!.x = xOrTranslation;
-      translationMatrix.values[3]!.y = y!;
-      translationMatrix.values[3]!.z = z!;
-
-      // Multiply the current matrix by the translation matrix
-      this.multiply(translationMatrix);
+  translate(translation: Vec3): this;
+  translate(arg1: number | Vec3, arg2?: number, arg3?: number): this 
+  {
+    const translationMatrix = new Mat4().identity();
+    if (arg1 instanceof Vec3) 
+    {
+      translationMatrix.put(3, new Vec4(arg1.x, arg1.y, arg1.z, 1));
+    } 
+    else 
+    {
+      translationMatrix.put(3, new Vec4(arg1, arg2!, arg3!, 1));
     }
-
-    return this;
+    return this.multiply(translationMatrix as this);
   }
 
-  // Concrete implementation for rotating the Mat4 using a quaternion
-  rotate(rotation: Quaternion): this;
-  // Overload for rotating the Mat4 by an axis and an angle
-  rotate(angle: number, axis: Vec3): this;
-  rotate(arg1: number | Quaternion, arg2?: Vec3): this {
-    if (arg1 instanceof Quaternion) {
-      const rotationMatrix = new Mat4().identity();
-      const { x, y, z, w } = arg1.normalize();
-
-      const xx = x * x;
-      const yy = y * y;
-      const zz = z * z;
-      const xy = x * y;
-      const xz = x * z;
-      const yz = y * z;
-      const wx = w * x;
-      const wy = w * y;
-      const wz = w * z;
-
-      rotationMatrix.values[0]!.x = 1 - 2 * (yy + zz);
-      rotationMatrix.values[0]!.y = 2 * (xy - wz);
-      rotationMatrix.values[0]!.z = 2 * (xz + wy);
-
-      rotationMatrix.values[1]!.x = 2 * (xy + wz);
-      rotationMatrix.values[1]!.y = 1 - 2 * (xx + zz);
-      rotationMatrix.values[1]!.z = 2 * (yz - wx);
-
-      rotationMatrix.values[2]!.x = 2 * (xz - wy);
-      rotationMatrix.values[2]!.y = 2 * (yz + wx);
-      rotationMatrix.values[2]!.z = 1 - 2 * (xx + yy);
-
-      // Multiply the current matrix by the rotation matrix
-      this.multiply(rotationMatrix);
-    } else {
-      const quaternion = new Quaternion().setFromAxisAngle(arg2!, arg1 as number);
-      return this.rotate(quaternion);
-    }
-
-    return this;
-  }
-
-   // Concrete implementation for rotating the Mat4 around the X-axis
-  rotateX(angle: number): this {
+  rotateX(angleInRadians: number): this 
+  {
     const rotationMatrix = new Mat4().identity();
-    const cosAngle = Math.cos(angle);
-    const sinAngle = Math.sin(angle);
+    const cos = Math.cos(angleInRadians);
+    const sin = Math.sin(angleInRadians);
 
-    rotationMatrix.values[1]!.y = cosAngle;
-    rotationMatrix.values[1]!.z = -sinAngle;
-    rotationMatrix.values[2]!.y = sinAngle;
-    rotationMatrix.values[2]!.z = cosAngle;
+    rotationMatrix.put(1, 1, cos);
+    rotationMatrix.put(2, 2, cos);
+    rotationMatrix.put(1, 2, -sin);
+    rotationMatrix.put(2, 1, sin);
 
-    // Multiply the current matrix by the rotation matrix
-    this.multiply(rotationMatrix);
-
-    return this;
+    return this.multiply(rotationMatrix as this);
   }
 
-  // Concrete implementation for rotating the Mat4 around the Y-axis
-  rotateY(angle: number): this {
+  rotateY(angleInRadians: number): this 
+  {
     const rotationMatrix = new Mat4().identity();
-    const cosAngle = Math.cos(angle);
-    const sinAngle = Math.sin(angle);
+    const cos = Math.cos(angleInRadians);
+    const sin = Math.sin(angleInRadians);
 
-    rotationMatrix.values[0]!.x = cosAngle;
-    rotationMatrix.values[0]!.z = sinAngle;
-    rotationMatrix.values[2]!.x = -sinAngle;
-    rotationMatrix.values[2]!.z = cosAngle;
+    rotationMatrix.put(0, 0, cos);
+    rotationMatrix.put(2, 2, cos);
+    rotationMatrix.put(0, 2, sin);
+    rotationMatrix.put(2, 0, -sin);
 
-    // Multiply the current matrix by the rotation matrix
-    this.multiply(rotationMatrix);
-
-    return this;
+    return this.multiply(rotationMatrix as this);
   }
 
-  // Concrete implementation for rotating the Mat4 around the Z-axis
-  rotateZ(angle: number): this {
+  rotateZ(angleInRadians: number): this 
+  {
     const rotationMatrix = new Mat4().identity();
-    const cosAngle = Math.cos(angle);
-    const sinAngle = Math.sin(angle);
+    const cos = Math.cos(angleInRadians);
+    const sin = Math.sin(angleInRadians);
 
-    rotationMatrix.values[0]!.x = cosAngle;
-    rotationMatrix.values[0]!.y = -sinAngle;
-    rotationMatrix.values[1]!.x = sinAngle;
-    rotationMatrix.values[1]!.y = cosAngle;
+    rotationMatrix.put(0, 0, cos);
+    rotationMatrix.put(1, 1, cos);
+    rotationMatrix.put(0, 1, -sin);
+    rotationMatrix.put(1, 0, sin);
 
-    // Multiply the current matrix by the rotation matrix
-    this.multiply(rotationMatrix);
-
-    return this;
+    return this.multiply(rotationMatrix as this);
   }
 
-  // Concrete implementation for scaling the Mat4 by individual components
-  scale(x: number, y: number, z: number): this;
-  // Concrete implementation for scaling the Mat4 by a vector
+  scale(sx: number, sy: number, sz: number): this;
   scale(scaling: Vec3): this;
-  scale(xOrScaling: number | Vec3, y?: number, z?: number): this {
-    if (xOrScaling instanceof Vec3) {
-      const scaleMatrix = new Mat4().identity();
-
-      scaleMatrix.values[0]!.x = xOrScaling.x;
-      scaleMatrix.values[1]!.y = xOrScaling.y;
-      scaleMatrix.values[2]!.z = xOrScaling.z;
-
-      // Multiply the current matrix by the scale matrix
-      this.multiply(scaleMatrix);
-    } else {
-      const scaleMatrix = new Mat4().identity();
-
-      scaleMatrix.values[0]!.x = xOrScaling;
-      scaleMatrix.values[1]!.y = y!;
-      scaleMatrix.values[2]!.z = z!;
-
-      // Multiply the current matrix by the scale matrix
-      this.multiply(scaleMatrix);
+  scale(arg1: number | Vec3, arg2?: number, arg3?: number): this 
+  {
+    const scalingMatrix = new Mat4().identity();
+    if (arg1 instanceof Vec3) 
+    {
+      scalingMatrix.put(0, 0, arg1.x);
+      scalingMatrix.put(1, 1, arg1.y);
+      scalingMatrix.put(2, 2, arg1.z);
+    } 
+    else 
+    {
+      scalingMatrix.put(0, 0, arg1);
+      scalingMatrix.put(1, 1, arg2!);
+      scalingMatrix.put(2, 2, arg3!);
     }
+    return this.multiply(scalingMatrix as this);
+  }
 
+  // Additional method for 3D transformations using Quaternion
+  rotateByQuaternion(quaternion: Quaternion): this 
+  {
+    const rotationMatrix = quaternion.toRotationMatrix();
+    return this.multiply(rotationMatrix as this);
+  }
+
+  slerp(target: this, alpha: number): this 
+  {
+    // Spherical linear interpolation is not applicable to Mat4 directly
+    // For 3D rotations, use Quaternions and convert them to Mat4
+    const quat1 = new Quaternion().setFromRotationMatrix(this);
+    const quat2 = new Quaternion().setFromRotationMatrix(target);
+    quat1.slerp(quat2, alpha);
+    const resultMat = new Mat4();
+    resultMat.fromQuaternion(quat1);
+    this.values = resultMat.values;
     return this;
   }
 
-  // Concrete implementation for creating a look-at view matrix
-  lookAt(eye: Vec3, target: Vec3, up: Vec3 = new Vec3(0, 1, 0)): this {
-    const zAxis = target.clone().subtract(eye).normalize();
-    const xAxis = up.clone().crossProduct(zAxis).normalize();
-    const yAxis = zAxis.clone().crossProduct(xAxis);
+  fromQuaternion(quaternion: Quaternion): this 
+  {
+    const { w, x, y, z } = quaternion;
 
-    this.values[0] = new Vec4(xAxis.x, yAxis.x, -zAxis.x, 0);
-    this.values[1] = new Vec4(xAxis.y, yAxis.y, -zAxis.y, 0);
-    this.values[2] = new Vec4(xAxis.z, yAxis.z, -zAxis.z, 0);
-    this.values[3] = new Vec4(-xAxis.dotProduct(eye), -yAxis.dotProduct(eye), zAxis.dotProduct(eye), 1);
+    const xx = x * x;
+    const xy = x * y;
+    const xz = x * z;
+    const xw = x * w;
+
+    const yy = y * y;
+    const yz = y * z;
+    const yw = y * w;
+
+    const zz = z * z;
+    const zw = z * w;
+
+    this.values[0]!.set(1 - 2 * (yy + zz), 2 * (xy - zw), 2 * (xz + yw), 0);
+    this.values[1]!.set(2 * (xy + zw), 1 - 2 * (xx + zz), 2 * (yz - xw), 0);
+    this.values[2]!.set(2 * (xz - yw), 2 * (yz + xw), 1 - 2 * (xx + yy), 0);
+    this.values[3]!.set(0, 0, 0, 1);
 
     return this;
+  }  
+
+
+  // Getters and Setters for rows
+  get m1(): Vec4 
+  {
+    return this.values[0];
   }
 
-  // Concrete implementation for creating a perspective projection matrix
-  perspective(fovY: number, aspect: number, near: number, far: number): this {
-    const f = 1.0 / Math.tan(fovY / 2);
-    const nf = 1.0 / (near - far);
-
-    this.values[0] = new Vec4(f / aspect, 0, 0, 0);
-    this.values[1] = new Vec4(0, f, 0, 0);
-    this.values[2] = new Vec4(0, 0, (far + near) * nf, -1);
-    this.values[3] = new Vec4(0, 0, 2 * far * near * nf, 0);
-
-    return this;
+  set m1(value: Vec4) 
+  {
+    this.values[0] = value;
   }
 
-  // Concrete implementation for creating an orthographic projection matrix
-  orthographic(left: number, right: number, bottom: number, top: number, near: number, far: number): this {
-    const lr = 1.0 / (left - right);
-    const bt = 1.0 / (bottom - top);
-    const nf = 1.0 / (near - far);
+  get m2(): Vec4 
+  {
+    return this.values[1];
+  }
 
-    this.values[0] = new Vec4(-2 * lr, 0, 0, 0);
-    this.values[1] = new Vec4(0, -2 * bt, 0, 0);
-    this.values[2] = new Vec4(0, 0, 2 * nf, 0);
-    this.values[3] = new Vec4((left + right) * lr, (top + bottom) * bt, (far + near) * nf, 1);
+  set m2(value: Vec4) 
+  {
+    this.values[1] = value;
+  }
 
-    return this;
+  get m3(): Vec4 
+  {
+    return this.values[2];
+  }
+
+  set m3(value: Vec4) 
+  {
+    this.values[2] = value;
+  }
+
+  get m4(): Vec4 
+  {
+    return this.values[3];
+  }
+
+  set m4(value: Vec4) 
+  {
+    this.values[3] = value;
+  }
+
+  // Getters and Setters for individual elements
+  get m11(): number 
+  {
+    return this.values[0]!.x;
+  }
+
+  set m11(value: number) 
+  {
+    this.values[0]!.x = value;
+  }
+
+  get m12(): number 
+  {
+    return this.values[0]!.y;
+  }
+
+  set m12(value: number) 
+  {
+    this.values[0]!.y = value;
+  }
+
+  get m13(): number 
+  {
+    return this.values[0]!.z;
+  }
+
+  set m13(value: number) 
+  {
+    this.values[0]!.z = value;
+  }
+
+  get m14(): number 
+  {
+    return this.values[0]!.w;
+  }
+
+  set m14(value: number) 
+  {
+    this.values[0]!.w = value;
+  }
+
+  get m21(): number 
+  {
+    return this.values[1]!.x;
+  }
+
+  set m21(value: number) 
+  {
+    this.values[1]!.x = value;
+  }
+
+  get m22(): number 
+  {
+    return this.values[1]!.y;
+  }
+
+  set m22(value: number) 
+  {
+    this.values[1]!.y = value;
+  }
+
+  get m23(): number 
+  {
+    return this.values[1]!.z;
+  }
+
+  set m23(value: number) 
+  {
+    this.values[1]!.z = value;
+  }
+
+  get m24(): number 
+  {
+    return this.values[1]!.w;
+  }
+
+  set m24(value: number) 
+  {
+    this.values[1]!.w = value;
+  }
+
+  get m31(): number 
+  {
+    return this.values[2]!.x;
+  }
+
+  set m31(value: number) 
+  {
+    this.values[2]!.x = value;
+  }
+
+  get m32(): number 
+  {
+    return this.values[2]!.y;
+  }
+
+  set m32(value: number) 
+  {
+    this.values[2]!.y = value;
+  }
+
+  get m33(): number 
+  {
+    return this.values[2]!.z;
+  }
+
+  set m33(value: number) 
+  {
+    this.values[2]!.z = value;
+  }
+
+  get m34(): number 
+  {
+    return this.values[2]!.w;
+  }
+
+  set m34(value: number) 
+  {
+    this.values[2]!.w = value;
+  }
+
+  get m41(): number 
+  {
+    return this.values[3]!.x;
+  }
+
+  set m41(value: number) 
+  {
+    this.values[3]!.x = value;
+  }
+
+  get m42(): number 
+  {
+    return this.values[3]!.y;
+  }
+
+  set m42(value: number) 
+  {
+    this.values[3]!.y = value;
+  }
+
+  get m43(): number 
+  {
+    return this.values[3]!.z;
+  }
+
+  set m43(value: number) 
+  {
+    this.values[3]!.z = value;
+  }
+
+  get m44(): number 
+  {
+    return this.values[3]!.w;
+  }
+
+  set m44(value: number) 
+  {
+    this.values[3]!.w = value;
   }
 }
