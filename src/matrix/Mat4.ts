@@ -2,6 +2,7 @@ import { Mat } from './Mat.js';
 import { Vec3 } from '../vector/Vec3.js';
 import { Vec4 } from '../vector/Vec4.js';
 import { Quaternion } from '../Quaternion.js';
+import type { Mat4Data } from '../types.js';
 
 export class Mat4 extends Mat<4, [Vec4, Vec4, Vec4, Vec4]> 
 {
@@ -503,8 +504,6 @@ export class Mat4 extends Mat<4, [Vec4, Vec4, Vec4, Vec4]>
 
   static orthographic( left: number, right: number, top: number, bottom: number, near: number, far: number ) 
   {
-    const mat = new Mat4();
-
     const w = 1.0 / ( right - left );
     const h = 1.0 / ( top - bottom );
     const p = 1.0 / ( far - near );
@@ -515,11 +514,15 @@ export class Mat4 extends Mat<4, [Vec4, Vec4, Vec4, Vec4]>
     const z = near * p;
     const zInv = - 1 * p;
 
-    mat.m11 = 2 * w;  mat.m21 = 0;      mat.m31 = 0;    mat.m11 = - x;
-    mat.m12 = 0;      mat.m22 = 2 * h;  mat.m32 = 0;    mat.m12 = - y;
-    mat.m13 = 0;      mat.m23 = 0;      mat.m33 = zInv; mat.m13 = - z;
-    mat.m14 = 0;      mat.m24 = 0;      mat.m34 = 0;    mat.m14 = 1;
+    const te: number[] = [];
+    
+    te[ 0 ] = 2 * w;  te[ 4 ] = 0;    te[ 8 ] = 0;    te[ 12 ] = - x;
+    te[ 1 ] = 0;    te[ 5 ] = 2 * h;  te[ 9 ] = 0;    te[ 13 ] = - y;
+    te[ 2 ] = 0;    te[ 6 ] = 0;    te[ 10 ] = zInv;  te[ 14 ] = - z;
+    te[ 3 ] = 0;    te[ 7 ] = 0;    te[ 11 ] = 0;   te[ 15 ] = 1;
 
+    const mat = new Mat4();
+    mat.set(...te as Mat4Data)
     return mat;
   }
 
