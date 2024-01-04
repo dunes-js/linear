@@ -14,8 +14,12 @@ export class Mat4 extends Mat<4, [Vec4, Vec4, Vec4, Vec4]>
   ) 
   {
     super(4);
-    this.set(m11, m12, m13, m14, m21, m22, m23, m24,
-             m31, m32, m33, m34, m41, m42, m43, m44);
+    this.set(
+      m11, m12, m13, m14, 
+      m21, m22, m23, m24,
+      m31, m32, m33, m34, 
+      m41, m42, m43, m44
+    );
   }
 
   set(
@@ -502,7 +506,7 @@ export class Mat4 extends Mat<4, [Vec4, Vec4, Vec4, Vec4]>
     )
   }
 
-  static orthographic( left: number, right: number, top: number, bottom: number, near: number, far: number ) 
+  static orthographic( left: number, right: number, top: number, bottom: number, near: number, far: number, coords = false) 
   {
     const w = 1.0 / ( right - left );
     const h = 1.0 / ( top - bottom );
@@ -511,8 +515,18 @@ export class Mat4 extends Mat<4, [Vec4, Vec4, Vec4, Vec4]>
     const x = ( right + left ) * w;
     const y = ( top + bottom ) * h;
 
-    const z = near * p;
-    const zInv = - 1 * p;
+    let z, zInv;
+
+    if (coords)
+    {
+      z = ( far + near ) * p;
+      zInv = - 2 * p;
+    }
+    else
+    {
+      z = near * p;
+      zInv = - 1 * p;
+    }
 
     const te: number[] = [];
     
