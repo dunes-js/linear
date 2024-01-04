@@ -490,4 +490,47 @@ export class Mat4 extends Mat<4, [Vec4, Vec4, Vec4, Vec4]>
   {
     this.values[3]!.w = value;
   }
+
+  // Static method to create an orthographic projection matrix
+  static orthographic(left: number, right: number, bottom: number, top: number, near: number, far: number): Mat4 {
+    const mat = new Mat4();
+    const width = right - left;
+    const height = top - bottom;
+    const depth = far - near;
+
+    mat.m1.set(2 / width, 0, 0, -(right + left) / width);
+    mat.m2.set(0, 2 / height, 0, -(top + bottom) / height);
+    mat.m3.set(0, 0, -2 / depth, -(far + near) / depth);
+    mat.m4.set(0, 0, 0, 1);
+
+    return mat;
+  }
+
+  // Static method to create a perspective projection matrix
+  static perspective(fov: number, aspect: number, near: number, far: number): Mat4 {
+    const mat = new Mat4();
+    const tanHalfFov = Math.tan(fov / 2);
+
+    mat.m1.set(1 / (aspect * tanHalfFov), 0, 0, 0);
+    mat.m2.set(0, 1 / tanHalfFov, 0, 0);
+    mat.m3.set(0, 0, -(far + near) / (far - near), -(2 * far * near) / (far - near));
+    mat.m4.set(0, 0, -1, 0);
+
+    return mat;
+  }
+
+  // Static method to create a view matrix using the lookAt approach
+  static lookAt(eye: Vec3, target: Vec3, up: Vec3): Mat4 {
+    const mat = new Mat4();
+    const zAxis = target.clone().subtract(eye).normalize();
+    const xAxis = up.clone().cross(zAxis).normalize();
+    const yAxis = zAxis.clone().cross(xAxis);
+
+    mat.m1.set(xAxis.x, xAxis.y, xAxis.z, -xAxis.dot(eye));
+    mat.m2.set(yAxis.x, yAxis.y, yAxis.z, -yAxis.dot(eye));
+    mat.m3.set(-zAxis.x, -zAxis.y, -zAxis.z, zAxis.dot(eye));
+    mat.m4.set(0, 0, 0, 1);
+
+    return mat;
+  }
 }

@@ -6,9 +6,10 @@ export class Plane
   #normal = new Vec3();
   #distance = 0;
 
-  constructor(normal: Vec4) 
+  constructor(normal?: Vec4) 
   {
-    this.set(normal);
+    if (normal)
+      this.set(normal);
   }
 
   set(normal: Vec4)

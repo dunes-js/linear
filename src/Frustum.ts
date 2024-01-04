@@ -1,11 +1,13 @@
 import { Mat4 } from "./matrix/Mat4.js";
 import { Plane } from "./Plane.js";
-import { Vec4 } from "./vector/Vec4.js";
 import { Vec3 } from "./vector/Vec3.js";
 
 export class Frustum 
 {
-  #planes: Plane[] = [];
+  #planes: [Plane, Plane, Plane, Plane, Plane, Plane] = [
+    new Plane, new Plane, new Plane, 
+    new Plane, new Plane, new Plane
+  ];
 
   constructor(projection: Mat4, view: Mat4) 
   {
