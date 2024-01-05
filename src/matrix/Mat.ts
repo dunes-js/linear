@@ -20,7 +20,34 @@ export abstract class Mat<Dimension extends number, T extends Vec<Dimension>[]> 
   abstract determinant(): number;
   abstract inverse(): this;
 
-  // Symbol.iterator implementation
+  toString(): string
+  {
+    let str = "Mat("
+    let i = 0;
+    for (const value of this.values) {
+      
+      let si = 0;
+      for (const val of value)
+      {
+        str += String(val);
+
+        si++;
+        if (si < value.size)
+          {
+            str += " "
+          }
+      }
+
+
+      i++;
+      if (i < this.size)
+      {
+        str += ",  "
+      }
+    }
+    return str + ")";
+  }
+
   *[Symbol.iterator](): Iterator<number> 
   {
     for (const value of this.data()) 

@@ -21,6 +21,20 @@ export abstract class Vec<N extends number> implements Iterable<number>
   // Swizzling
   abstract swizzle(indices: Tuple<number, N>): this;
 
+  toString(): string
+  {
+    let str = "Vec("
+    let i = 0;
+    for (const value of this.values) {
+      str += value;
+      i++;
+      if (i < this.size)
+      {
+        str += ", "
+      }
+    }
+    return str + ")";
+  }
 
   *[Symbol.iterator](): Iterator<number> 
   {
