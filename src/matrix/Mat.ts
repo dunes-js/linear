@@ -20,16 +20,17 @@ export abstract class Mat<Dimension extends number, T extends Vec<Dimension>[]> 
   abstract determinant(): number;
   abstract inverse(): this;
 
-  toString(): string
+  toString(p = 1, b = false): string
   {
     let str = "Mat("
+    if (b) str += "\n";
     let i = 0;
     for (const value of this.values) {
       
       let si = 0;
       for (const val of value)
       {
-        str += String(val);
+        str += val.toFixed(p);
 
         si++;
         if (si < value.size)
@@ -42,9 +43,10 @@ export abstract class Mat<Dimension extends number, T extends Vec<Dimension>[]> 
       i++;
       if (i < this.size)
       {
-        str += ",  "
+        str += b ? "\n" : ",  ";
       }
     }
+    if (b) str += "\n";
     return str + ")";
   }
 
