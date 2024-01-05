@@ -18,5 +18,8 @@
   "repository": {
     "type": "git",
     "url": "git://github.com/omarfkuri/dunes.git"
+  },
+  "dependencies": {
+    "@dunes/tools": "^0.9.101"
   }
 }

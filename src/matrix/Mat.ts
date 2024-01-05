@@ -1,3 +1,4 @@
+import type { Tuple } from "@dunes/tools";
 import type { Vec } from "../vector/Vec.js";
 
 export abstract class Mat<Dimension extends number, T extends Vec<Dimension>[]> implements Iterable<number> 
@@ -49,9 +50,19 @@ export abstract class Mat<Dimension extends number, T extends Vec<Dimension>[]> 
     return this;
   }
 
-  data(): number[] 
+  data(): [
+    ...Tuple<number, Dimension>,
+    ...Tuple<number, Dimension>,
+    ...Tuple<number, Dimension>,
+    ...Tuple<number, Dimension>,
+  ]
   {
-    return this.values.flatMap(vec => vec!.data());
+    return this.values.flatMap(vec => vec!.data()) as [
+      ...Tuple<number, Dimension>,
+      ...Tuple<number, Dimension>,
+      ...Tuple<number, Dimension>,
+      ...Tuple<number, Dimension>,
+    ];
   }
 
 

@@ -1,3 +1,4 @@
+import type { Vec4Data } from '../types.js';
 import { Vec } from './Vec.js';
 
 export class Vec4 extends Vec<4> 
@@ -62,9 +63,9 @@ export class Vec4 extends Vec<4>
     return this;
   }
 
-  swizzle(indices: number[]): this 
+  swizzle(indices: Vec4Data): this 
   {
-    const swizzledValues = indices.map(index => this.values[index] || 0);
+    const swizzledValues = indices.map(index => this.values[index] || 0) as Vec4Data;
     this.x = swizzledValues[0]!;
     this.y = swizzledValues[1]!;
     this.z = swizzledValues[2]!;

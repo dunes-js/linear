@@ -1,11 +1,13 @@
 
+import type { Tuple } from "@dunes/tools/array";
+
 export abstract class Vec<N extends number> implements Iterable<number> 
 {
-  protected values: number[];
+  protected values: Tuple<number, N>;
 
   constructor(readonly size: N) 
   {
-    this.values = Array.from({ length: size }, () => 0);
+    this.values = Array.from({ length: size }, () => 0) as Tuple<number, N>;
   }
   
   abstract clone(): this;
@@ -17,7 +19,7 @@ export abstract class Vec<N extends number> implements Iterable<number>
   abstract reflectAcross(normal: this): this;
 
   // Swizzling
-  abstract swizzle(indices: number[]): this;
+  abstract swizzle(indices: Tuple<number, N>): this;
 
 
   *[Symbol.iterator](): Iterator<number> 
@@ -27,9 +29,9 @@ export abstract class Vec<N extends number> implements Iterable<number>
     }
   }
 
-  data(): number[]
+  data(): Tuple<number, N>
   {
-    return [...this.values];
+    return [...this.values] as Tuple<number, N>;
   }
 
   at(n: number): number | null
