@@ -17,7 +17,7 @@
   "author": "Omar <omarfkuri@gmail.com>",
   "repository": {
     "type": "git",
-    "url": "git://github.com/omarfkuri/dunes.git"
+    "url": "git://github.com/dunes-js/linear.git"
   },
   "dependencies": {
     "@dunes/tools": "^0.9.101"
