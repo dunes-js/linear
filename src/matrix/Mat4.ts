@@ -27,12 +27,14 @@ export class Mat4 extends Mat<4, [Vec4, Vec4, Vec4, Vec4]>
     m21: number, m22: number, m23: number, m24: number,
     m31: number, m32: number, m33: number, m34: number,
     m41: number, m42: number, m43: number, m44: number
-  ) 
+  ): Mat4
   {
     this.m1 = new Vec4(m11, m12, m13, m14);
     this.m2 = new Vec4(m21, m22, m23, m24);
     this.m3 = new Vec4(m31, m32, m33, m34);
     this.m4 = new Vec4(m41, m42, m43, m44);
+
+    return this;
   }
 
   fill(): Vec4 
@@ -506,6 +508,36 @@ export class Mat4 extends Mat<4, [Vec4, Vec4, Vec4, Vec4]>
     )
   }
 
+  static translate( vec: Vec3 ): Mat4
+  {
+    const [x, y, z] = vec;
+
+    return new Mat4().set(
+      1,   0,  0, 0,
+      0,   1,  0, 0,
+      0,   0,  1, 0,
+      x!, y!, z!, 1,
+    )
+  }
+
+  static rotation(angle: number, axis: Vec3): Mat4 {
+    const [x, y, z] = axis;
+    const len = Math.hypot(x!, y!, z!);
+    if (len === 0) throw new Error("Zero-length axis");
+
+    const nx = x! / len, ny = y! / len, nz = z! / len;
+    const c = Math.cos(angle);
+    const s = Math.sin(angle);
+    const t = 1 - c;
+
+    return new Mat4().set(
+      t * nx * nx + c,     t * nx * ny + s * nz, t * nx * nz - s * ny, 0,
+      t * nx * ny - s * nz, t * ny * ny + c,     t * ny * nz + s * nx, 0,
+      t * nx * nz + s * ny, t * ny * nz - s * nx, t * nz * nz + c,     0,
+      0,                   0,                   0,                   1,
+    );
+  }
+
   static orthographic( left: number, right: number, top: number, bottom: number, near: number, far: number, coords = false) 
   {
     const w = 1.0 / ( right - left );
@@ -535,9 +567,7 @@ export class Mat4 extends Mat<4, [Vec4, Vec4, Vec4, Vec4]>
     te[ 2 ] = 0;    te[ 6 ] = 0;    te[ 10 ] = zInv;  te[ 14 ] = - z;
     te[ 3 ] = 0;    te[ 7 ] = 0;    te[ 11 ] = 0;   te[ 15 ] = 1;
 
-    const mat = new Mat4();
-    mat.set(...te as Mat4Data)
-    return mat;
+    return new Mat4().set(...te as Mat4Data);
   }
 
   static perspective(fov: number, aspect: number, near: number, far: number): Mat4 {
