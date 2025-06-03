@@ -1,3 +1,3 @@
 
-export * from "./matrix/index.js"
-export * from "./vector/index.js"
+export * from "./mat/index.js"
+export * from "./vec/index.js"
