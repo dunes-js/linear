@@ -163,15 +163,15 @@ export class Mat4 extends Mat<4>
 		far: number
 	): Mat4
 	{
-		const lr = 1 / (left - right);
-		const bt = 1 / (bottom - top);
-		const nf = 1 / (near - far);
+		const lr = 1 / (right - left);
+		const bt = 1 / (top - bottom);
+		const nf = 1 / (far - near);
 
-		return new Mat4(0).set([
-			[-2 * lr, 0, 0, 0],
-			[0, -2 * bt, 0, 0],
-			[0, 0, 2 * nf, 0],
-			[(left + right) * lr, (top + bottom) * bt, (far + near) * nf, 1]
+		return new Mat4([
+			[2 * lr, 0, 0, -(right + left) * lr],
+			[0, 2 * bt, 0, -(top + bottom) * bt],
+			[0, 0, -2 * nf, -(far + near) * nf],
+			[0, 0, 0, 1]
 		]);
 	}
 
