@@ -139,6 +139,18 @@ export class Mat4 extends Mat<4>
 		]);
 	}
 
+	public static scale(scale: Vec3): Mat4
+	{
+		const [x, y, z] = scale;
+
+		return new Mat4([
+			[x!, 0, 0, 0],
+			[0, y!, 0, 0],
+			[0, 0, z!, 0],
+			[0, 0, 0, 1],
+		]);
+	}
+
 	public static rotation(angle: number, axis: Vec3): Mat4
 	{
 		const [x, y, z] = axis;
